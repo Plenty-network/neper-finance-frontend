@@ -1,112 +1,57 @@
 {
-  "name": "liquity",
+  "name": "neper-frontend",
+  "version": "0.1.0",
   "private": true,
-  "workspaces": {
-    "packages": [
-      "packages/*"
-    ],
-    "nohoist": [
-      "**/web3-eth-abi/@ethersproject/abi",
-      "**/@graphprotocol/*",
-      "**/jest*",
-      "**/@babel/*",
-      "**/babel*",
-      "**/react-scripts"
-    ]
-  },
-  "engines": {
-    "node": ">=14.0.0 <17.0.0"
-  },
-  "release": {
-    "extends": "semantic-release-monorepo",
-    "branches": [
-      "master"
-    ],
-    "plugins": [
-      "@semantic-release/commit-analyzer",
-      [
-        "@semantic-release/release-notes-generator",
-        {
-          "preset": "angular",
-          "parserOpts": {
-            "headerPattern": "^(\\w*)(?:\\((.*)\\))?!?: (.*)$"
-          }
-        }
-      ],
-      "@semantic-release/npm",
-      "@semantic-release/github"
-    ]
-  },
-  "commitlint": {
-    "extends": [
-      "@commitlint/config-conventional"
-    ]
+  "dependencies": {
+    "@apollo/client": "^3.8.8",
+    "@rainbow-me/rainbowkit": "^1.3.3",
+    "@reduxjs/toolkit": "^1.9.7",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.66",
+    "@types/react": "^18.2.39",
+    "@types/react-dom": "^18.2.17",
+    "@wagmi/core": "^1.4.13",
+    "bignumber.js": "^9.1.2",
+    "ethers": "^6.9.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-hot-toast": "^2.4.1",
+    "react-redux": "^8.1.3",
+    "react-router-dom": "^6.20.1",
+    "react-scripts": "5.0.1",
+    "react-select": "^5.8.0",
+    "redux": "^4.2.1",
+    "redux-thunk": "^2.4.2",
+    "typescript": "^4.9.5",
+    "viem": "^1.21.4",
+    "wagmi": "^1.4.13",
+    "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "build": "run-s 'build:*'",
-    "build:dev-frontend": "yarn workspace @liquity/dev-frontend build",
-    "deploy": "yarn workspace @liquity/lib-ethers hardhat deploy",
-    "deploy:chicken-bonds": "yarn --cwd ../ChickenBond deploy-fork compile publish:local",
-    "watch:chicken-bonds": "yarn --cwd ../ChickenBond watch",
-    "link:chicken-bonds": "yarn workspace @liquity/dev-frontend link:chicken-bonds",
-    "unlink:chicken-bonds": "yarn workspace @liquity/dev-frontend unlink:chicken-bonds",
-    "docs": "run-s 'docs:*'",
-    "docs:collect-sdk-apis": "node scripts/collect-sdk-apis.js",
-    "docs:api-documenter": "api-documenter generate -i temp/sdk-apis -o docs/sdk",
-    "fuzzer": "yarn workspace @liquity/fuzzer fuzzer",
-    "postinstall": "run-s prepare",
-    "prepare": "run-s 'prepare:*'",
-    "prepare:contracts": "yarn workspace @liquity/contracts prepare",
-    "prepare:lib-base": "yarn workspace @liquity/lib-base prepare",
-    "prepare:lib-ethers": "yarn workspace @liquity/lib-ethers prepare",
-    "prepare:lib-react": "yarn workspace @liquity/lib-react prepare",
-    "prepare:lib-subgraph": "yarn workspace @liquity/lib-subgraph prepare",
-    "prepare:providers": "yarn workspace @liquity/providers prepare",
-    "prepare:subgraph": "yarn workspace @liquity/subgraph prepare",
-    "prepare:docs": "run-s docs",
-    "rebuild": "run-s prepare build",
-    "release": "run-s 'release:*'",
-    "release:delete-dev-deployments": "yarn workspace @liquity/lib-ethers delete-dev-deployments",
-    "release:lib-base": "yarn workspace @liquity/lib-base semantic-release",
-    "release:lib-ethers": "yarn workspace @liquity/lib-ethers semantic-release",
-    "release:lib-react": "yarn workspace @liquity/lib-react semantic-release",
-    "release:providers": "yarn workspace @liquity/providers semantic-release",
-    "save-live-version": "yarn workspace @liquity/lib-ethers save-live-version",
-    "start-dev-chain": "run-s 'start-dev-chain:*'",
-    "start-dev-chain:openethereum": "node dev-chain/start.js",
-    "start-dev-chain:prepare-providers": "yarn prepare:providers",
-    "start-dev-chain:deploy-contracts": "yarn deploy --network dev",
-    "start-dev-chain:prepare-lib-ethers": "yarn prepare:lib-ethers",
-    "stop-dev-chain": "docker kill openethereum",
-    "start-dev-frontend": "yarn workspace @liquity/dev-frontend start",
-    "start-demo": "run-s 'start-demo:*'",
-    "start-demo:dev-chain": "yarn start-dev-chain",
-    "start-demo:dev-frontend": "yarn workspace @liquity/dev-frontend start-demo",
-    "stop-demo": "yarn stop-dev-chain",
-    "start-fork": "hardhat --config hardhat.config.mainnet-fork.ts node",
-    "start-tunnel": "./scripts/start-local-tunnel.sh",
-    "test": "run-s 'test:*'",
-    "test:lib-base": "yarn workspace @liquity/lib-base test",
-    "test:lib-ethers": "yarn workspace @liquity/lib-ethers test",
-    "test:dev-frontend": "run-s --continue-on-error 'test:dev-frontend:*'",
-    "test:dev-frontend:start-dev-chain": "yarn start-dev-chain",
-    "test:dev-frontend:run": "yarn workspace @liquity/dev-frontend test run",
-    "test:dev-frontend:stop-dev-chain": "yarn stop-dev-chain",
-    "test-contracts": "yarn workspace @liquity/contracts test",
-    "test-live": "run-s 'test-live:*'",
-    "test-live:lib-ethers": "yarn workspace @liquity/lib-ethers test-live",
-    "coverage": "run-s 'coverage:*'",
-    "coverage:contracts": "yarn workspace @liquity/contracts coverage"
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   },
   "devDependencies": {
-    "@commitlint/cli": "^12.0.1",
-    "@commitlint/config-conventional": "^12.0.1",
-    "@microsoft/api-documenter": "^7.12.6",
-    "fs-extra": "^9.1.0",
-    "npm-run-all": "^4.1.5",
-    "prettier": "^2.1.2",
-    "semantic-release": "^17.4.2",
-    "semantic-release-monorepo": "^7.0.4"
-  },
-  "packageManager": "yarn@3.5.1"
+    "tailwindcss": "^3.3.5"
+  }
 }
