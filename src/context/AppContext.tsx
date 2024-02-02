@@ -118,7 +118,7 @@ export const AppProvider = ({ children }: any) => {
             totalColl
             pUSDSupply
             vaultCount
-            borrowRate
+            baseRate
             debtRebaseIndex
             collRebaseIndex
           }
