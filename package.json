@@ -13,6 +13,7 @@
     "@wagmi/core": "^1.4.13",
     "bignumber.js": "^9.1.2",
     "ethers": "^6.9.0",
+    "graphql": "^16.8.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hot-toast": "^2.4.1",
