@@ -8,9 +8,11 @@ export interface Vault {
 }
 
 export interface Params {
-  borrowRate: string;
+  baseRate: string;
   mcr: string;
   totalColl: string;
   totalDebt: string;
   vaultCount: string;
+  debtRebaseIndex: string;
+  collRebaseIndex: string;
 }

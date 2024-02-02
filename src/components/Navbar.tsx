@@ -40,11 +40,11 @@ interface NetworkOption {
 
 const options: { [key: string]: NetworkOption } = {};
 Object.keys(CHAINS).map(
-  (chainId) =>
+  chainId =>
     (options[chainId] = {
       label: CHAINS[chainId].name.split(" ")[0],
       value: chainId,
-      imgSrc: CHAINS[chainId].iconUrl,
+      imgSrc: CHAINS[chainId].iconUrl
     })
 );
 
@@ -53,22 +53,22 @@ const customStyles: StylesConfig<NetworkOption, false> = {
     ...provided,
     color: "black",
     backgroundColor: state.isSelected || state.isFocused ? "#F8CC81" : "white",
-    cursor: "pointer",
+    cursor: "pointer"
   }),
-  control: (provided) => ({
+  control: provided => ({
     ...provided,
-    cursor: "pointer",
+    cursor: "pointer"
   }),
-  input: (provided) => ({
+  input: provided => ({
     ...provided,
-    color: "transparent",
-  }),
+    color: "transparent"
+  })
 };
 
 const Navbar = () => {
   const { address, isConnected } = useAccount();
 
-  const { network } = useTypedSelector((state) => state.infra);
+  const { network } = useTypedSelector(state => state.infra);
   const { switchNetwork, fetchData, setDataLoading } = useActions();
 
   /*   useEffect(() => {
@@ -83,7 +83,6 @@ const Navbar = () => {
   useEffect(() => {
     (async () => {
       setClient(network);
-      //await setContracts(network); //todo: come to this later
       setDataLoading();
       fetchData(address);
     })();
@@ -109,11 +108,11 @@ const Navbar = () => {
   };
 
   return (
-    <div className="text-black py-4 px-28 flex justify-between items-center z-0">
+    <div className="text-black py-4 px-10 md:px-28 flex justify-between items-center z-0">
       <Link to="/">
         <div className="flex items-center">
           <img src="/brand.png" alt="brand" className="w-10 mr-2" />
-          <span className="text-2xl font-bold">Neper Finance</span>
+          <span className="text-2xl font-bold text-white hidden md:block">Neper Finance</span>
         </div>
       </Link>
 

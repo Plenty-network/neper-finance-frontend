@@ -4,23 +4,15 @@ import { toast } from "react-hot-toast";
 import Button from "./Button";
 import Modal from "./modals/Modal";
 
-import { Vault as VaultType } from "../utils/types";
 import { useActions } from "../hooks/useActions";
 
-import { useAccount } from "wagmi";
-import EmptyVault from "./EmptyVault";
 import { useAppContext } from "../context/AppContext";
 
 const StabilityPool = ({}) => {
-  const [createVaultModalOpen, setCreateVaultModalOpen] = useState(false);
   const [withdrawModalOpen, setWithdrawModalOpen] = useState(false);
-  const [createVaultInput, setCreateVaultInput] = useState("");
-  const [createVaultError, setCreateVaultError] = useState(false);
+
   const [stakeModalOpen, setStakeModalOpen] = useState(false);
-  const [withdrawCollateralModalOpen, setWithdrawCollateralModalOpen] =
-    useState(false);
-  const [mintDebtModalOpen, setMintDebtModalOpen] = useState(false);
-  const [returnDebtModalOpen, setReturnDebtModalOpen] = useState(false);
+  const [withdrawCollateralModalOpen, setWithdrawCollateralModalOpen] = useState(false);
 
   const [stakeInput, setStakeInput] = useState("");
   const [withdrawInput, setWithdrawInput] = useState("");
@@ -28,11 +20,9 @@ const StabilityPool = ({}) => {
   const [stakeError, setStakeError] = useState(false);
   const [withdrawError, setWithdrawError] = useState(false);
 
-  const { fetchData, setLoader, setDataLoading } = useActions();
-  const { address } = useAccount();
+  const { setLoader } = useActions();
 
-  const { depositStablityPool, withdrawStabilityPool, fetchVault } =
-    useAppContext();
+  const { depositStablityPool, withdrawStabilityPool, fetchVault } = useAppContext();
 
   const onStake = async () => {
     try {
@@ -68,21 +58,21 @@ const StabilityPool = ({}) => {
   return (
     <div>
       {
-        <div className="text-xl rounded-md bg-beige">
+        <div className="text-xl rounded-md bg-white">
           <div className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-200">
             <h2 className="text-xl font-bold">Stability Pool</h2>
           </div>
           <div className="flex items-center justify-between gap-8 px-8 py-4">
             <div>
-              <div className="font-medium mb-1">APR</div>
-              <div>{10} %</div>
+              <div className="font-medium mb-1">Unclaimed WBTC</div>
+              <div>{0.0} WBTC</div>
             </div>
             <div>
               <div className="font-medium mb-1">pUSD Staked</div>
               <div>{0}</div>
             </div>
           </div>
-          <div className="h-0.5 bg-slate-300"></div>
+          <div className="h-0.5"></div>
           <div className="flex gap-2 px-8 py-3">
             <Button onClick={() => setStakeModalOpen(true)}>
               <div className="text-sm px-3 py-2.5">Stake</div>
@@ -102,7 +92,7 @@ const StabilityPool = ({}) => {
         value={stakeInput}
         onClose={() => setStakeModalOpen(false)}
         onSubmit={onStake}
-        onChange={(v) => setStakeInput(v)}
+        onChange={v => setStakeInput(v)}
       />
       <Modal
         show={withdrawModalOpen}
@@ -113,7 +103,7 @@ const StabilityPool = ({}) => {
         value={withdrawInput}
         onClose={() => setWithdrawCollateralModalOpen(false)}
         onSubmit={onWithdraw}
-        onChange={(v) => setWithdrawInput(v)}
+        onChange={v => setWithdrawInput(v)}
       />
     </div>
   );

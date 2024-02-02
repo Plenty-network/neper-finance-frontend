@@ -119,11 +119,11 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
       {!isVault ? (
         <EmptyVault openModal={setCreateVaultModalOpen} />
       ) : (
-        <div className="text-xl rounded-md bg-beige">
+        <div className="text-xl rounded-md bg-white">
           <div className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-200">
             <h2 className="text-xl font-bold">Vault</h2>
           </div>
-          <div className="flex items-center justify-between gap-8 px-8 py-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 px-8 py-4">
             <div>
               <div className="font-medium mb-1">Collateral Ratio</div>
               <div>{collRatio} %</div>
@@ -141,8 +141,8 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
               <div>$ {liquidationAt}</div>
             </div>
           </div>
-          <div className="h-0.5 bg-slate-300"></div>
-          <div className="flex gap-2 px-8 py-3">
+          <div className="h-0.5 "></div>
+          <div className="flex flex-col md:flex-row gap-2 px-8 py-3">
             <Button onClick={() => setAddCollateralModalOpen(true)}>
               <div className="text-sm px-3 py-2.5">Add Collateral</div>
             </Button>
@@ -158,6 +158,7 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
           </div>
         </div>
       )}
+
       <Modal
         show={addCollateralModalOpen}
         heading="Add Collateral"

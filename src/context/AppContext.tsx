@@ -1,18 +1,13 @@
 import { JsonRpcProvider, JsonRpcSigner, ethers } from "ethers";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
-import { CHAINS } from "../utils/constants";
+import { CHAINS, Q64_MUL_100 } from "../utils/constants";
 import NeperCore from "../abi/NeperCore";
 import BigNumber from "bignumber.js";
 import ERC20 from "../abi/ERC20";
 import { toast } from "react-hot-toast";
 import { getEthersSigner } from "../utils/signer";
-import {
-  ApolloClient,
-  DefaultOptions,
-  InMemoryCache,
-  gql,
-} from "@apollo/client";
+import { ApolloClient, DefaultOptions, InMemoryCache, gql } from "@apollo/client";
 import { Params, Vault } from "../utils/types";
 import StabilityPool from "../abi/StabilityPool";
 
@@ -35,7 +30,9 @@ const AppContext = createContext<AppContextType>({
     totalColl: "",
     totalDebt: "",
     vaultCount: "",
-    borrowRate: "",
+    baseRate: "",
+    debtRebaseIndex: "",
+    collRebaseIndex: ""
   },
   increaseCollateral: async (collAmount: string) => {},
   decreaseCollateral: async (collAmount: string) => {},
@@ -50,31 +47,35 @@ const AppContext = createContext<AppContextType>({
     coll: "",
     collRatio: "",
     liquidationAt: "",
-    isVault: false,
-  },
+    isVault: false
+  }
 });
 
 export const AppProvider = ({ children }: any) => {
   // State that you want to provide to other components
   const [stats, setStats] = useState<Params>({} as Params);
+  const priceFeed = 40000;
   const chainId = useChainId();
   const { address, isConnected } = useAccount();
   const defaultOptions: DefaultOptions = {
     watchQuery: {
       fetchPolicy: "no-cache",
-      errorPolicy: "ignore",
+      errorPolicy: "ignore"
     },
     query: {
       fetchPolicy: "network-only",
-      errorPolicy: "all",
-    },
+      errorPolicy: "all"
+    }
   };
   const [vault, setVault] = useState<Vault>({} as Vault);
 
   useEffect(() => {
-    fetchStats();
-    if (!isConnected || !address) return;
-    fetchVault(address);
+    const fetchAllData = async () => {
+      const stats = await fetchStats();
+      if (!isConnected || !address) return;
+      await fetchVault2(address, stats);
+    };
+    fetchAllData();
   }, [address, isConnected]);
 
   const fetchVaultsFromSubgraph = async (account: string) => {
@@ -82,7 +83,7 @@ export const AppProvider = ({ children }: any) => {
       const client = new ApolloClient({
         uri: CHAINS["0x" + chainId.toString(16)].subgraphEndpoint,
         cache: new InMemoryCache(),
-        defaultOptions,
+        defaultOptions
       });
 
       const query = gql`
@@ -107,7 +108,7 @@ export const AppProvider = ({ children }: any) => {
       const client = new ApolloClient({
         uri: CHAINS["0x" + chainId.toString(16)].subgraphEndpoint,
         cache: new InMemoryCache(),
-        defaultOptions,
+        defaultOptions
       });
 
       const query = gql`
@@ -132,15 +133,19 @@ export const AppProvider = ({ children }: any) => {
 
   const fetchStats = async () => {
     try {
-      const stats = (await fetchStatsFromSubgraph()).data.states;
-
+      const statsHere = (await fetchStatsFromSubgraph()).data.states;
+      console.log(statsHere);
       setStats({
-        borrowRate: parseFloat(stats.borrowRate).toFixed(2),
-        mcr: parseFloat(stats.mcr).toFixed(2), //todo calculation
-        totalColl: parseFloat(stats.totalColl).toFixed(4),
-        totalDebt: parseFloat(stats.pUSDSupply).toFixed(2),
-        vaultCount: stats.vaultCount,
+        baseRate: parseFloat(statsHere.baseRate).toFixed(2),
+        mcr: parseFloat(statsHere.mcr).toFixed(2), //todo calculation
+        totalColl: parseFloat(statsHere.totalColl).toFixed(4),
+        totalDebt: new BigNumber(statsHere.pUSDSupply).dividedBy(1e18).toFixed(4),
+        vaultCount: statsHere.vaultCount,
+        debtRebaseIndex: statsHere.debtRebaseIndex,
+        collRebaseIndex: statsHere.collRebaseIndex
       });
+
+      return statsHere;
     } catch (err: any) {
       console.error(err);
       throw err;
@@ -150,7 +155,7 @@ export const AppProvider = ({ children }: any) => {
   const fetchVault = async (owner: string) => {
     try {
       const vaultsRes = (await fetchVaultsFromSubgraph(owner)).data.vaults;
-      console.log(vaultsRes);
+
       if (vaultsRes.length === 0) {
         setVault({
           id: "",
@@ -158,17 +163,76 @@ export const AppProvider = ({ children }: any) => {
           coll: "",
           collRatio: "",
           liquidationAt: "",
-          isVault: false,
+          isVault: false
         });
         return;
       }
+
+      const debt = new BigNumber(vaultsRes[0].debt)
+        .multipliedBy(new BigNumber(vaultsRes[0].lastDebtRebaseIndex))
+        .dividedBy(new BigNumber(stats.debtRebaseIndex));
+
+      const coll = new BigNumber(vaultsRes[0].coll)
+        .multipliedBy(new BigNumber(vaultsRes[0].lastCollRebaseIndex))
+        .dividedBy(new BigNumber(stats.collRebaseIndex));
+
       setVault({
         id: vaultsRes[0].id,
-        debt: parseFloat(vaultsRes[0].debt).toFixed(4),
-        coll: parseFloat(vaultsRes[0].coll).toFixed(4),
-        collRatio: "", //todo calculate
-        liquidationAt: "",
-        isVault: true,
+        debt: debt.toFixed(4),
+        coll: coll.toFixed(4),
+        collRatio: debt.isGreaterThan(0)
+          ? new BigNumber(coll).multipliedBy(100).dividedBy(debt).toFixed(2)
+          : "MAX",
+        liquidationAt: new BigNumber(stats.mcr)
+          .multipliedBy(debt)
+          .dividedBy(coll.dividedBy(priceFeed).multipliedBy(Q64_MUL_100))
+          .multipliedBy(1e18)
+          .toString(),
+        isVault: true
+      });
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  };
+
+  const fetchVault2 = async (owner: string, stats: Params) => {
+    try {
+      const vaultsRes = (await fetchVaultsFromSubgraph(owner)).data.vaults;
+
+      if (vaultsRes.length === 0) {
+        setVault({
+          id: "",
+          debt: "",
+          coll: "",
+          collRatio: "",
+          liquidationAt: "",
+          isVault: false
+        });
+        return;
+      }
+
+      const debt = new BigNumber(vaultsRes[0].debt)
+        .multipliedBy(new BigNumber(vaultsRes[0].lastDebtRebaseIndex))
+        .dividedBy(new BigNumber(stats.debtRebaseIndex));
+
+      const coll = new BigNumber(vaultsRes[0].coll)
+        .multipliedBy(new BigNumber(vaultsRes[0].lastCollRebaseIndex))
+        .dividedBy(new BigNumber(stats.collRebaseIndex));
+
+      setVault({
+        id: vaultsRes[0].id,
+        debt: debt.toFixed(4),
+        coll: coll.toFixed(4),
+        collRatio: debt.isGreaterThan(0)
+          ? new BigNumber(coll).multipliedBy(100).dividedBy(debt).toFixed(2)
+          : "MAX",
+        liquidationAt: new BigNumber(stats.mcr)
+          .multipliedBy(debt)
+          .dividedBy(coll.dividedBy(priceFeed).multipliedBy(Q64_MUL_100))
+          .multipliedBy(1e18)
+          .toString(),
+        isVault: true
       });
     } catch (err: any) {
       console.error(err);
@@ -341,12 +405,10 @@ export const AppProvider = ({ children }: any) => {
     fetchVault,
     depositStablityPool,
     withdrawStabilityPool,
-    vault,
+    vault
   };
 
-  return (
-    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
-  );
+  return <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>;
 };
 
 export const useAppContext = () => {

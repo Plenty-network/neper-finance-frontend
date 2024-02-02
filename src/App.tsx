@@ -11,49 +11,41 @@ import {
   polygonZkEvmTestnet,
   mantleTestnet,
   scrollTestnet,
-  baseGoerli,
+  baseGoerli
 } from "wagmi/chains";
 import { publicProvider } from "wagmi/providers/public";
 import HomePage from "./pages/HomePage";
 import { AppProvider } from "./context/AppContext";
-const { chains, publicClient } = configureChains(
-  [
-    sepolia,
-    arbitrumSepolia,
-    polygonZkEvmTestnet,
-    mantleTestnet,
-    scrollTestnet,
-    baseGoerli,
-  ],
-  [publicProvider()]
-);
+const { chains, publicClient } = configureChains([arbitrumSepolia], [publicProvider()]);
 
 const { connectors } = getDefaultWallets({
   appName: "Neper Finance",
   projectId: "YOUR_PROJECT_ID",
-  chains,
+  chains
 });
 
 const wagmiConfig = createConfig({
   autoConnect: true,
   connectors,
-  publicClient,
+  publicClient
 });
 
 const App = () => {
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <AppProvider>
-        <RainbowKitProvider chains={chains}>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/" Component={Landing} />
-              <Route path="/dapp" element={<HomePage />} />
-            </Routes>
-          </BrowserRouter>
-        </RainbowKitProvider>
-      </AppProvider>
-    </WagmiConfig>
+    <div className="bg-gradient-to-b from-purple-800 via-gray-950 to-black ">
+      <WagmiConfig config={wagmiConfig}>
+        <AppProvider>
+          <RainbowKitProvider chains={chains}>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/" Component={HomePage} />
+                <Route path="/dapp" element={<HomePage />} />
+              </Routes>
+            </BrowserRouter>
+          </RainbowKitProvider>
+        </AppProvider>
+      </WagmiConfig>
+    </div>
   );
 };
 
