@@ -221,7 +221,7 @@ export const AppProvider = ({ children }: any) => {
         return {
           currentScale: BigNumber(0),
           currentEpoch: BigNumber(0),
-          P: BigNumber(1)
+          P: BigNumber(0)
         };
       }
 
@@ -283,7 +283,7 @@ export const AppProvider = ({ children }: any) => {
     try {
       const stabilityPoolRes = (await fetchStabilityPoolFromSubgraph(owner)).data.depositorStates;
 
-      if (stabilityPoolRes.length === 0) {
+      if (!stabilityPoolRes || stabilityPoolRes.length === 0) {
         setStabilityPool({
           reward_amount: "",
           stake_amount: ""
@@ -332,8 +332,9 @@ export const AppProvider = ({ children }: any) => {
     let compoundedStake: BigNumber;
     const scaleDiff: number = currentScale.minus(scaleSnapshot).toNumber();
 
-    console.log("Scale Diff");
-    console.log(scaleDiff);
+    if (snapshot_P.isEqualTo(0) && P.isEqualTo(0)) {
+      return userSnapshot.currentDeposit;
+    }
 
     if (snapshot_P.isEqualTo(0)) snapshot_P = BigNumber(1);
 
@@ -342,6 +343,9 @@ export const AppProvider = ({ children }: any) => {
      * at least 2^32 (i.e., FixedPoint.Q32) -- so return 0.
      */
     if (scaleDiff === 0) {
+      console.log("Scale Diff 0");
+      console.log("Initial Stake");
+      console.log(initialStake.toString());
       compoundedStake = initialStake.multipliedBy(P).dividedBy(snapshot_P);
     } else if (scaleDiff === 1) {
       compoundedStake = initialStake
