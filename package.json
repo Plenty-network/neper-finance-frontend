@@ -12,6 +12,7 @@
     "@types/react-dom": "^18.2.17",
     "@wagmi/core": "^1.4.13",
     "bignumber.js": "^9.1.2",
+    "browserify-zlib": "^0.2.0",
     "ethers": "^6.9.0",
     "graphql": "^16.8.1",
     "net": "^1.0.2",
