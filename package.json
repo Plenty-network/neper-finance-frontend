@@ -74,6 +74,7 @@
     "path": false,
     "os": false,
     "net": true,
-    "tls": false
+    "tls": false,
+    "zlib": false
   }
 }
