@@ -8,7 +8,7 @@ interface ButtonProps {
 const Button = ({ onClick, children }: ButtonProps) => {
   return (
     <div
-      className="hover:cursor-pointer hover:opacity-80 flex items-center justify-center rounded-md bg-secondary font-medium text-black"
+      className="hover:cursor-pointer hover:opacity-80 flex items-center justify-center rounded-md bg-secondary font-medium text-white"
       onClick={onClick}
     >
       {children}

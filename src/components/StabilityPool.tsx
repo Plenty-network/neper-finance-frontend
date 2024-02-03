@@ -22,13 +22,16 @@ const StabilityPool = ({}) => {
 
   const { setLoader } = useActions();
 
-  const { depositStablityPool, withdrawStabilityPool, fetchAllData } = useAppContext();
+  const { depositStablityPool, withdrawStabilityPool, fetchAllData,
+    stabilityPool
+  } = useAppContext();
 
   const onStake = async () => {
     try {
       setLoader(true);
       await depositStablityPool(stakeInput);
-
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      fetchAllData();
       /*       await new Promise((resolve) => setTimeout(resolve, 2000));
       fetchVault(address!); */
       setStakeModalOpen(false);
@@ -43,7 +46,8 @@ const StabilityPool = ({}) => {
     try {
       setLoader(true);
       await withdrawStabilityPool(withdrawInput);
-
+      await new Promise(resolve => setTimeout(resolve, 5000));
+      fetchAllData();
       /*       await new Promise((resolve) => setTimeout(resolve, 2000));
       fetchVault(address!); */
       setWithdrawModalOpen(false);
@@ -65,11 +69,11 @@ const StabilityPool = ({}) => {
           <div className="flex items-center justify-between gap-8 px-8 py-4">
             <div>
               <div className="font-medium mb-1">Unclaimed WBTC</div>
-              <div>{0.0} WBTC</div>
+              <div>{stabilityPool.reward_amount} WBTC</div>
             </div>
             <div>
               <div className="font-medium mb-1">pUSD Staked</div>
-              <div>{0}</div>
+              <div>{stabilityPool.stake_amount} pUSD</div>
             </div>
           </div>
           <div className="h-0.5"></div>
