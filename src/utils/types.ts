@@ -7,6 +7,18 @@ export interface Vault {
   isVault?: boolean;
 }
 
+export interface StabilityPool {
+  // id: string;
+  stake_amount: string;
+  reward_amount: string;
+}
+
+export interface StabilityPoolStates {
+  currentScale: BigInt;
+  currentEpoch: BigInt;
+  P: BigInt;
+}
+
 export interface Params {
   baseRate: string;
   mcr: string;
