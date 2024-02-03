@@ -35,7 +35,7 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
   const { fetchData, setLoader, setDataLoading } = useActions();
   const { address } = useAccount();
 
-  const { increaseCollateral, decreaseCollateral, fetchVault, mintDebt, returnDebt } =
+  const { increaseCollateral, decreaseCollateral, fetchAllData, mintDebt, returnDebt } =
     useAppContext();
 
   const onAddCollateral = async () => {
@@ -43,8 +43,8 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
       setLoader(true);
       await increaseCollateral(addCollateralInput);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      fetchVault(address!);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      fetchAllData();
       setAddCollateralModalOpen(false);
     } catch (err: any) {
       console.error(err);
@@ -59,8 +59,8 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
       await decreaseCollateral(withdrawCollateralInput);
       //await withdrawCollateral(id, withdrawCollateralInput);
       //setDataLoading();
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      fetchVault(address!);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      fetchAllData();
       setWithdrawCollateralModalOpen(false);
       //toast.success("Succesfully withdrawn collateral!");
     } catch (err: any) {
@@ -75,8 +75,8 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
       setLoader(true);
       //await mintDebt(id, mintDebtInput);
       await mintDebt(mintDebtInput);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      fetchVault(address!);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      fetchAllData();
       setMintDebtModalOpen(false);
     } catch (err: any) {
       console.error(err);
@@ -89,8 +89,8 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
     try {
       setLoader(true);
       await returnDebt(returnDebtInput);
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      fetchVault(address!);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      fetchAllData();
       setReturnDebtModalOpen(false);
     } catch (err: any) {
       console.error(err);
@@ -104,8 +104,8 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
       setLoader(true);
       await increaseCollateral(createVaultInput);
       //wait 1 second
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      fetchVault(address!);
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      fetchAllData();
       setCreateVaultModalOpen(false);
     } catch (err: any) {
       console.error(err);
@@ -124,21 +124,21 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
             <h2 className="text-xl font-bold">Vault</h2>
           </div>
           <div className="flex flex-col md:flex-row items-center justify-between gap-8 px-8 py-4">
-            <div>
+            <div className="flex justify-between w-full flex-row md:flex-col">
               <div className="font-medium mb-1">Collateral Ratio</div>
-              <div>{collRatio} %</div>
+              <div className="text-base md:text-lg">{collRatio} %</div>
             </div>
-            <div>
+            <div className="flex justify-between w-full flex-row md:flex-col">
               <div className="font-medium mb-1">Collateral Value</div>
-              <div>{coll} WBTC</div>
+              <div className="text-base md:text-lg">{coll} WBTC</div>
             </div>
-            <div>
+            <div className="flex justify-between w-full flex-row md:flex-col">
               <div className="font-medium mb-1">Debt</div>
-              <div>{debt} pUSD</div>
+              <div className="text-base md:text-lg">{debt} pUSD</div>
             </div>
-            <div>
+            <div className="flex justify-between w-full flex-row md:flex-col">
               <div className="font-medium mb-1">Liquidation at</div>
-              <div>$ {liquidationAt}</div>
+              <div className="text-base md:text-lg">$ {liquidationAt}</div>
             </div>
           </div>
           <div className="h-0.5 "></div>

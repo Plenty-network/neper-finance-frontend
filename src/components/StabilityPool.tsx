@@ -22,7 +22,7 @@ const StabilityPool = ({}) => {
 
   const { setLoader } = useActions();
 
-  const { depositStablityPool, withdrawStabilityPool, fetchVault } = useAppContext();
+  const { depositStablityPool, withdrawStabilityPool, fetchAllData } = useAppContext();
 
   const onStake = async () => {
     try {

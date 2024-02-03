@@ -16,6 +16,24 @@ const Params = ({ mcr, baseRate, totalColl, totalDebt, vaultCount }: ParamsProps
         <h4 className="font-bold text-lg mb-3">Protocol</h4>
         <ul>
           <li className="flex justify-between py-1">
+            <span>Current MCR</span>
+            <span className="font-medium">{mcr}%</span>
+          </li>
+          <li className="flex justify-between py-1">
+            <span>Total Collateral Ratio</span>
+            <span className="font-medium">
+              {((parseFloat(totalColl) * 41000 * 100) / parseFloat(totalDebt)).toFixed(2)}%
+            </span>
+          </li>
+          <li className="flex justify-between py-1">
+            <span>Total Collateral</span>
+            <span className="font-medium">{totalColl} WBTC</span>
+          </li>
+          <li className="flex justify-between py-1">
+            <span>Total Debt</span>
+            <span className="font-medium">{totalDebt} pUSD</span>
+          </li>
+          <li className="flex justify-between py-1">
             <span>Borrowing Fee</span>
             <span className="font-medium">{(parseFloat(baseRate) + 0.5).toFixed(3)} %</span>
           </li>
@@ -26,24 +44,6 @@ const Params = ({ mcr, baseRate, totalColl, totalDebt, vaultCount }: ParamsProps
           <li className="flex justify-between py-1">
             <span>pUSD in Stability Pool</span>
             <span className="font-medium">83.3M (57.1%)</span>
-          </li>
-          <li className="flex justify-between py-1">
-            <span>Total Collateral Ratio</span>
-            <span className="font-medium">
-              {((parseFloat(totalColl) * 40000) / parseFloat(totalDebt)).toFixed(2)}%
-            </span>
-          </li>
-          <li className="flex justify-between py-1">
-            <span>Current MCR</span>
-            <span className="font-medium">{mcr}%</span>
-          </li>
-          <li className="flex justify-between py-1">
-            <span>Total Collateral</span>
-            <span className="font-medium">{totalColl} WBTC</span>
-          </li>
-          <li className="flex justify-between py-1">
-            <span>Total Debt</span>
-            <span className="font-medium">{totalDebt} pUSD</span>
           </li>
         </ul>
       </div>

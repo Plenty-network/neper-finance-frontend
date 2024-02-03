@@ -25,6 +25,8 @@ cache
 # ngrok config is individual to each dev
 ngrok.config.yml
 
+build
+
 # Yarn
 .pnp.*
 /.yarn/*
