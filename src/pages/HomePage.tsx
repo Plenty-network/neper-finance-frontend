@@ -15,7 +15,7 @@ import StabilityPool from "../components/StabilityPool";
 function HomePage() {
   const { isLoading } = useTypedSelector(state => state.contract);
 
-  const { vault, stats } = useAppContext();
+  const { vault, stats,  } = useAppContext();
 
   return (
     <>
@@ -47,6 +47,7 @@ function HomePage() {
           totalDebt={stats.totalDebt}
           vaultCount={stats.vaultCount}
           baseRate={stats.baseRate}
+          pUSDInStabilityPool={stats.pUSDInStabilityPool}
         />
 
         <Toaster />

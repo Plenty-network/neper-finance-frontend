@@ -46,10 +46,10 @@ export const CHAINS: Chains = {
     currency: { name: "ETH", symbol: "ETH", decimals: 18 },
     subgraphEndpoint: "https://api.studio.thegraph.com/query/64179/nepercore/version/latest",
     contracts: {
-      neperCore: "0xE39e0bdfFb6bA12F1869c85a7cB908816553f0E3",
-      neperUSD: "0x32Eef049F5AC6aF211A0D94a4DE844CC6804D2F3",
+      neperCore: "0x6E41052542A9f0da414b351DAC213dB833aC616C",
+      neperUSD: "0x5F8C60f2877F83F3254634400d2F315675CD57E7",
       wbtc: "0xD085812E6B7FC569809423Fb7c564f56547a85Ed",
-      stabilityPool: "0x0f9519F40dAfCeC618e3d35e501E8823F0C26fBD"
+      stabilityPool: "0x3dE9ba89c85852F1d253efDC2B96919Db4e7F539"
     }
   },
   "0x5a2": {

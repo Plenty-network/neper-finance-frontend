@@ -1,7 +1,7 @@
 import { JsonRpcProvider, JsonRpcSigner, ethers, parseEther } from "ethers";
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useAccount, useChainId } from "wagmi";
-import { CHAINS, Q64_MUL_100 } from "../utils/constants";
+import { CHAINS, Q64, Q64_MUL_100 } from "../utils/constants";
 import NeperCore from "../abi/NeperCore";
 import BigNumber from "bignumber.js";
 import ERC20 from "../abi/ERC20";
@@ -34,7 +34,8 @@ const AppContext = createContext<AppContextType>({
     vaultCount: "",
     baseRate: "",
     debtRebaseIndex: "",
-    collRebaseIndex: ""
+    collRebaseIndex: "",
+    pUSDInStabilityPool: ""
   },
   increaseCollateral: async (collAmount: string) => {},
   decreaseCollateral: async (collAmount: string) => {},
@@ -60,7 +61,6 @@ const AppContext = createContext<AppContextType>({
 export const AppProvider = ({ children }: any) => {
   // State that you want to provide to other components
   const [stats, setStats] = useState<Params>({} as Params);
-  const priceFeed = 40000;
   const chainId = useChainId();
   const { address, isConnected } = useAccount();
   const defaultOptions: DefaultOptions = {
@@ -80,13 +80,41 @@ export const AppProvider = ({ children }: any) => {
     const stats = await fetchStats();
     const stabilityPoolState = await fetchStabilityPoolStats();
     if (!isConnected || !address) return;
-    await fetchVault(address, stats);
+    let price = await fetchPrice();
+    await fetchVault(address, stats, price);
     await fetchStabilityPool(address, stabilityPoolState);
   };
 
   useEffect(() => {
     fetchAllData();
   }, [address, isConnected]);
+
+  async function fetchPrice(): Promise<any> {
+    try {
+      const client = new ApolloClient({
+        uri: CHAINS["0x" + chainId.toString(16)].subgraphEndpoint,
+        cache: new InMemoryCache(),
+        defaultOptions
+      });
+
+      const query = gql`
+        query {
+          priceFeed(id: "003") {
+            id
+            price
+            lastUpdate
+          }
+        }
+      `;
+
+      const price = await client.query({ query });
+
+      return price.data.priceFeed.price;
+    } catch (err: any) {
+      console.error(err);
+      throw err;
+    }
+  }
 
   const fetchVaultsFromSubgraph = async (account: string) => {
     try {
@@ -182,6 +210,7 @@ export const AppProvider = ({ children }: any) => {
             id
             currentScale
             currentEpoch
+            neperUSDDeposit
             P
           }
         }
@@ -195,7 +224,6 @@ export const AppProvider = ({ children }: any) => {
   const fetchStats = async () => {
     try {
       const statsHere = (await fetchStatsFromSubgraph()).data.states;
-      console.log(statsHere);
       setStats({
         baseRate: parseFloat(statsHere.baseRate).toFixed(2),
         mcr: parseFloat(statsHere.mcr).toFixed(2),
@@ -203,7 +231,8 @@ export const AppProvider = ({ children }: any) => {
         totalDebt: new BigNumber(statsHere.pUSDSupply).dividedBy(1e18).toFixed(2),
         vaultCount: statsHere.vaultCount,
         debtRebaseIndex: statsHere.debtRebaseIndex,
-        collRebaseIndex: statsHere.collRebaseIndex
+        collRebaseIndex: statsHere.collRebaseIndex,
+        pUSDInStabilityPool: "0.0"
       });
 
       return statsHere;
@@ -225,10 +254,19 @@ export const AppProvider = ({ children }: any) => {
         };
       }
 
+      let pUSDSupply = new BigNumber(statsHere.neperUSDDeposit).dividedBy(1e18);
+
+      setStats(prev => {
+        return {
+          ...prev,
+          pUSDInStabilityPool: pUSDSupply.toFixed(2)
+        };
+      });
+
       return {
-        currentScale: BigNumber(statsHere[0].currentScale),
-        currentEpoch: BigNumber(statsHere[0].currentEpoch),
-        P: BigNumber(statsHere[0].P)
+        currentScale: BigNumber(statsHere.currentScale),
+        currentEpoch: BigNumber(statsHere.currentEpoch),
+        P: BigNumber(statsHere.P)
       };
     } catch (err: any) {
       console.error(err);
@@ -236,7 +274,7 @@ export const AppProvider = ({ children }: any) => {
     }
   };
 
-  const fetchVault = async (owner: string, stats: Params) => {
+  const fetchVault = async (owner: string, stats: Params, price: number) => {
     try {
       const vaultsRes = (await fetchVaultsFromSubgraph(owner)).data.vaults;
 
@@ -265,7 +303,7 @@ export const AppProvider = ({ children }: any) => {
         debt: debt.toFixed(2),
         coll: coll.toFixed(4),
         collRatio: debt.isGreaterThan(0)
-          ? new BigNumber(coll).multipliedBy(priceFeed).multipliedBy(100).dividedBy(debt).toFixed(2)
+          ? new BigNumber(coll).multipliedBy(price).multipliedBy(100).dividedBy(debt).toFixed(2)
           : "MAX",
         liquidationAt: new BigNumber(stats.mcr)
           .multipliedBy(debt)
@@ -291,15 +329,9 @@ export const AppProvider = ({ children }: any) => {
         return;
       }
 
-      console.log("Stability Pool Res");
-      console.log(stabilityPoolRes);
-
-      // TODO: compute reward amount per stake unit
-      const reward_amount = "0.0";
-
       const stake_amount = calculateCompoundedStakeFromSnapshots(stabilityPoolRes, stats);
-      // calculateCompoundedStakeFromSnapshots(new BigNumber(stabilityPoolRes.currentDeposit).multipliedBy(1e18), stats)
-      // new BigNumber(stabilityPoolRes.currentDeposit).toFixed(2);
+
+      const reward_amount = calculateCollGainFromSnapShot(stabilityPoolRes, stats);
 
       setStabilityPool({
         reward_amount,
@@ -310,6 +342,33 @@ export const AppProvider = ({ children }: any) => {
       throw error;
     }
   };
+
+  function calculateCollGainFromSnapShot(userSnapshot: any, snapshot: any): string {
+    const initialStake = BigNumber(userSnapshot.currentDeposit).multipliedBy(1e18);
+
+    const SP_SCALING_FACTOR = Math.pow(2, 32);
+    const user_P: BigNumber = BigNumber(userSnapshot.P);
+    const user_scale: BigNumber = BigNumber(userSnapshot.scale);
+    const user_epoch: BigNumber = BigNumber(userSnapshot.epoch);
+    const user_S = BigNumber(userSnapshot.S);
+
+    // const S = BigNumber(snapshot.S);
+    // const cachedScale = BigNumber(snapshot.currentScaleCached);
+    // const cachedEpoch = BigNumber(snapshot.currentEpochCached);
+
+    // if (user_P.isEqualTo(0)) return "0.0";
+
+    // let firstPortion: BigNumber = S.minus(user_S);
+    // let secondPortion: BigNumber = S.dividedBy(SP_SCALING_FACTOR);
+
+    // let collGain = initialStake
+    //   .multipliedBy(firstPortion.multipliedBy(secondPortion))
+    //   .dividedBy(user_P)
+    //   .dividedBy(Q64);
+
+    // return collGain.dividedBy(1e8).toFixed(2);
+    return "0.0";
+  }
 
   /// userSnapshot: the user's snapshot {currentDeposit, S, P, scale, epoch}
   /// snapshot: the current snapshot {currentScale, currentEpoch, P}
@@ -332,7 +391,7 @@ export const AppProvider = ({ children }: any) => {
     let compoundedStake: BigNumber;
     const scaleDiff: number = currentScale.minus(scaleSnapshot).toNumber();
 
-    if (snapshot_P.isEqualTo(0) && P.isEqualTo(0)) {
+    if (snapshot_P.isEqualTo(0) && (P.isNaN() || P.isEqualTo(0))) {
       return userSnapshot.currentDeposit;
     }
 
@@ -343,9 +402,6 @@ export const AppProvider = ({ children }: any) => {
      * at least 2^32 (i.e., FixedPoint.Q32) -- so return 0.
      */
     if (scaleDiff === 0) {
-      console.log("Scale Diff 0");
-      console.log("Initial Stake");
-      console.log(initialStake.toString());
       compoundedStake = initialStake.multipliedBy(P).dividedBy(snapshot_P);
     } else if (scaleDiff === 1) {
       compoundedStake = initialStake

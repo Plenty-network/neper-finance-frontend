@@ -1,3 +1,4 @@
+import BigNumber from "bignumber.js";
 import { Params as ParamsType } from "../utils/types";
 
 type ParamsProps = {
@@ -6,9 +7,17 @@ type ParamsProps = {
   totalColl: string;
   totalDebt: string;
   vaultCount: string;
+  pUSDInStabilityPool: string;
 };
 
-const Params = ({ mcr, baseRate, totalColl, totalDebt, vaultCount }: ParamsProps) => {
+const Params = ({
+  mcr,
+  baseRate,
+  totalColl,
+  totalDebt,
+  vaultCount,
+  pUSDInStabilityPool
+}: ParamsProps) => {
   return (
     <div className="bg-white shadow-lg rounded-lg p-6 bg-gradient-to-r from-blue-200 to-blue-400 w-full md:w-[45%]">
       <h3 className="text-xl mb-2 font-semibold border-b pb-2">Neper statistics</h3>
@@ -43,7 +52,14 @@ const Params = ({ mcr, baseRate, totalColl, totalDebt, vaultCount }: ParamsProps
           </li>
           <li className="flex justify-between py-1">
             <span>pUSD in Stability Pool</span>
-            <span className="font-medium">83.3M (57.1%)</span>
+            <span className="font-medium">
+              {pUSDInStabilityPool} pUSD (
+              {BigNumber(pUSDInStabilityPool)
+                .dividedBy(BigNumber(totalDebt))
+                .multipliedBy(100)
+                .toFixed(2)}
+              %)
+            </span>
           </li>
         </ul>
       </div>

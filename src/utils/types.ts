@@ -27,4 +27,5 @@ export interface Params {
   vaultCount: string;
   debtRebaseIndex: string;
   collRebaseIndex: string;
+  pUSDInStabilityPool : string;
 }
