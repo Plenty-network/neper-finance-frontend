@@ -331,7 +331,7 @@ export const AppProvider = ({ children }: any) => {
 
       const stake_amount = calculateCompoundedStakeFromSnapshots(stabilityPoolRes, stats);
 
-      const reward_amount = calculateCollGainFromSnapShot(stabilityPoolRes, stats);
+      const reward_amount = await calculateCollGainFromSnapShot(stabilityPoolRes, stats);
 
       setStabilityPool({
         reward_amount,
@@ -343,36 +343,69 @@ export const AppProvider = ({ children }: any) => {
     }
   };
 
-  function calculateCollGainFromSnapShot(userSnapshot: any, snapshot: any): string {
+  async function calculateCollGainFromSnapShot(userSnapshot: any, snapshot: any): Promise<string> {
     const initialStake = BigNumber(userSnapshot.currentDeposit).multipliedBy(1e18);
 
     const SP_SCALING_FACTOR = Math.pow(2, 32);
-    const user_P: BigNumber = BigNumber(userSnapshot.P);
+    let user_P: BigNumber = BigNumber(userSnapshot.P);
     const user_scale: BigNumber = BigNumber(userSnapshot.scale);
     const user_epoch: BigNumber = BigNumber(userSnapshot.epoch);
     const user_S = BigNumber(userSnapshot.S);
 
-    // const S = BigNumber(snapshot.S);
-    // const cachedScale = BigNumber(snapshot.currentScaleCached);
-    // const cachedEpoch = BigNumber(snapshot.currentEpochCached);
+    const firstPortionSum = await fetchEpochToScaleToSum(
+      user_epoch.toNumber(),
+      user_scale.toNumber()
+    );
 
-    // if (user_P.isEqualTo(0)) return "0.0";
+    const secondPortionSum = await fetchEpochToScaleToSum(
+      user_epoch.toNumber(),
+      user_scale.plus(1).toNumber()
+    );
 
-    // let firstPortion: BigNumber = S.minus(user_S);
-    // let secondPortion: BigNumber = S.dividedBy(SP_SCALING_FACTOR);
+    if (!firstPortionSum && !secondPortionSum) return "0.0";
 
-    // let collGain = initialStake
-    //   .multipliedBy(firstPortion.multipliedBy(secondPortion))
-    //   .dividedBy(user_P)
-    //   .dividedBy(Q64);
+    if (user_P.isEqualTo(0)) user_P = BigNumber(1);
 
-    // return collGain.dividedBy(1e8).toFixed(2);
-    return "0.0";
+    let firstPortion: BigNumber = firstPortionSum.minus(user_S);
+    let secondPortion: BigNumber = secondPortionSum.dividedBy(SP_SCALING_FACTOR);
+
+    // if (secondPortion.isEqualTo(0)) secondPortion = BigNumber(1);
+
+    let collGain = initialStake
+      .multipliedBy(firstPortion.plus(secondPortion))
+      .dividedBy(user_P)
+      .dividedBy(Q64);
+
+    return collGain.dividedBy(1e8).toFixed(2);
+  }
+
+  async function fetchEpochToScaleToSum(epoch: number, scale: number): Promise<BigNumber> {
+    const client = new ApolloClient({
+      uri: CHAINS["0x" + chainId.toString(16)].subgraphEndpoint,
+      cache: new InMemoryCache(),
+      defaultOptions
+    });
+
+    const query = gql`
+      query {
+        epochToScaleToSum(id: "${epoch}_${scale}") {
+          sum
+        }
+      }`;
+
+    const result = await client.query({ query });
+
+    if (!result.data.epochToScaleToSum) return new BigNumber(0);
+
+    return new BigNumber(result.data.epochToScaleToSum.sum);
   }
 
   /// userSnapshot: the user's snapshot {currentDeposit, S, P, scale, epoch}
   /// snapshot: the current snapshot {currentScale, currentEpoch, P}
   function calculateCompoundedStakeFromSnapshots(userSnapshot: any, snapshot: any): string {
+    // console.log("User snapshot", userSnapshot);
+    // console.log("Snapshot", snapshot);
+
     const SP_SCALING_FACTOR = Math.pow(2, 32);
 
     const currentEpoch: BigNumber = snapshot.currentEpoch;
@@ -384,6 +417,8 @@ export const AppProvider = ({ children }: any) => {
     const epochSnapshot: BigNumber = BigNumber(userSnapshot.epoch);
 
     const initialStake = BigNumber(userSnapshot.currentDeposit).multipliedBy(1e18);
+
+    // console.log("Initial stake", initialStake.toString());
 
     // If stake was made before a pool-emptying event, then it has been fully cancelled with debt -- so, return 0
     if (epochSnapshot < currentEpoch) return "0.0";
@@ -422,9 +457,9 @@ export const AppProvider = ({ children }: any) => {
      *
      * Thus it's unclear whether this line is still really needed.
      */
-    if (compoundedStake < initialStake.dividedBy(SP_SCALING_FACTOR)) return "0.0";
+    // if (compoundedStake < initialStake.dividedBy(SP_SCALING_FACTOR)) return "0.0";
 
-    return compoundedStake.dividedBy(1e18).toString();
+    return compoundedStake.dividedBy(1e18).toFixed(2);
   }
 
   const increaseCollateral = async (collAmount: string) => {
