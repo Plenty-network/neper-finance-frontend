@@ -119,25 +119,25 @@ const Vault = ({ isVault = false, id, coll, debt, collRatio, liquidationAt }: Va
       {!isVault ? (
         <EmptyVault openModal={setCreateVaultModalOpen} />
       ) : (
-        <div className="text-xl rounded-md bg-white">
-          <div className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-200">
-            <h2 className="text-xl font-bold">Vault</h2>
+        <div className="text-xl rounded-md bg-[#131313] text-white">
+          <div className="px-6 py-2 bg-gradient-to-r from-purple-800 to-purple-600">
+            <h2 className="text-xl font-bold text-white">Vault</h2>
           </div>
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 px-8 py-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 px-8 py-4 ">
             <div className="flex justify-between w-full flex-row md:flex-col">
-              <div className="font-medium mb-1">Collateral Ratio</div>
+              <div className="font-medium mb-1 text-[#797979]">Collateral Ratio</div>
               <div className="text-base md:text-lg">{collRatio} %</div>
             </div>
             <div className="flex justify-between w-full flex-row md:flex-col">
-              <div className="font-medium mb-1">Collateral Value</div>
+              <div className="font-medium mb-1 text-[#797979]">Collateral Value</div>
               <div className="text-base md:text-lg">{coll} WBTC</div>
             </div>
             <div className="flex justify-between w-full flex-row md:flex-col">
-              <div className="font-medium mb-1">Debt</div>
+              <div className="font-medium mb-1 text-[#797979]">Debt</div>
               <div className="text-base md:text-lg">{debt} pUSD</div>
             </div>
             <div className="flex justify-between w-full flex-row md:flex-col">
-              <div className="font-medium mb-1">Liquidation at</div>
+              <div className="font-medium mb-1 text-[#797979]">Liquidation at</div>
               <div className="text-base md:text-lg">$ {liquidationAt}</div>
             </div>
           </div>

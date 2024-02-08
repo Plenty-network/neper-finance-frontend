@@ -30,14 +30,14 @@ const Modal = ({
   if (!show) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center z-400">
-      <div className="p-4 bg-white rounded-md w-3/4 md:w-1/3 shadow-lg">
+    <div className="fixed inset-0 bg-black bg-opacity-70 flex justify-center items-center text-white z-400">
+      <div className="p-4 bg-[#131313] rounded-md w-3/4 md:w-1/3 shadow-lg">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-medium">{heading}</h2>
+          <h2 className="text-lg font-medium text-white">{heading}</h2>
           <i onClick={onClose} className="hover:cursor-pointer bi bi-x text-2xl" />
         </div>
         <div className="mb-4">
-          <label htmlFor="input1" className="block text-gray-700 text-sm font-bold mb-2">
+          <label htmlFor="input1" className="block text-[#797979] text-sm font-bold mb-2">
             {label}
           </label>
           <input
@@ -46,7 +46,7 @@ const Modal = ({
             placeholder={placeholder}
             onChange={e => onChange(e.target.value)}
             value={value}
-            className="appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none"
+            className="appearance-none border border-[#797979] text-white rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none bg-[#222222]"
           />
           {subLabel && <span className="text-xs">{subLabel}</span>}
           {error && <div className="text-base mt-3 text-red-600">Invalid amount</div>}

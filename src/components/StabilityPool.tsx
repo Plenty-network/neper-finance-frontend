@@ -22,9 +22,8 @@ const StabilityPool = ({}) => {
 
   const { setLoader } = useActions();
 
-  const { depositStablityPool, withdrawStabilityPool, fetchAllData,
-    stabilityPool
-  } = useAppContext();
+  const { depositStablityPool, withdrawStabilityPool, fetchAllData, stabilityPool } =
+    useAppContext();
 
   const onStake = async () => {
     try {
@@ -62,18 +61,18 @@ const StabilityPool = ({}) => {
   return (
     <div>
       {
-        <div className="text-xl rounded-md bg-white">
-          <div className="px-6 py-2 bg-gradient-to-r from-blue-400 to-blue-200">
-            <h2 className="text-xl font-bold">Stability Pool</h2>
+        <div className="text-xl rounded-md bg-[#131313]">
+          <div className="px-6 py-2 bg-gradient-to-r from-purple-800 to-purple-600">
+            <h2 className="text-xl font-bold text-white">Stability Pool</h2>
           </div>
           <div className="flex items-center justify-between gap-8 px-8 py-4">
             <div>
-              <div className="font-medium mb-1">Unclaimed WBTC</div>
-              <div>{stabilityPool.reward_amount} WBTC</div>
+              <div className="font-medium mb-1 text-[#797979]">Unclaimed WBTC</div>
+              <div className="text-white">{stabilityPool.reward_amount} WBTC</div>
             </div>
             <div>
-              <div className="font-medium mb-1">pUSD Staked</div>
-              <div>{stabilityPool.stake_amount} pUSD</div>
+              <div className="font-medium mb-1 text-[#797979]">pUSD Staked</div>
+              <div className="text-white">{stabilityPool.stake_amount} pUSD</div>
             </div>
           </div>
           <div className="h-0.5"></div>
@@ -105,7 +104,7 @@ const StabilityPool = ({}) => {
         placeholder="pUSD amount"
         error={withdrawError}
         value={withdrawInput}
-        onClose={() => setWithdrawCollateralModalOpen(false)}
+        onClose={() => setWithdrawModalOpen(false)}
         onSubmit={onWithdraw}
         onChange={v => setWithdrawInput(v)}
       />
